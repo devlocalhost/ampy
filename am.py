@@ -7,12 +7,11 @@ import cloudscraper
 
 BASE_URL = "https://www.apkmirror.com"
 BASE_SEARCH = f"{BASE_URL}/?post_type=app_release&searchtype=apk&s="
-USER_AGENT_STRING = "Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0" # "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
-HEADERS = {
-    "User-Agent": USER_AGENT_STRING
-}
+USER_AGENT_STRING = "Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0"  # "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
+HEADERS = {"User-Agent": USER_AGENT_STRING}
 
 scraper = cloudscraper.create_scraper()
+
 
 def search(query):
     print("[search] Sleeping...")
@@ -33,7 +32,10 @@ def search(query):
             app_dict = {
                 "name": app.find("h5", {"class": "appRowTitle"}).text.strip(),
                 "link": BASE_URL + app.find("a", {"class": "downloadLink"})["href"],
-                "image": BASE_URL + app.find("img", {"class": "ellipsisText"})["src"].replace("h=32", "h=96").replace("w=32", "w=96")
+                "image": BASE_URL
+                + app.find("img", {"class": "ellipsisText"})["src"]
+                .replace("h=32", "h=96")
+                .replace("w=32", "w=96"),
             }
 
             apps.append(app_dict)
@@ -42,6 +44,7 @@ def search(query):
             pass
 
     return apps[:5]
+
 
 def get_app_details():
     print("[get_app_details] Sleeping...")
@@ -56,12 +59,49 @@ def get_app_details():
 
     data = soup.find_all("div", {"class": ["table-row", "headerFont"]})[1]
 
-    architecture = data.find_all("div", {"class": ["table-cell", "rowheight", "addseparator", "expand", "pad", "dowrap"]})[1].text.strip()
-    android_version = data.find_all("div", {"class": ["table-cell", "rowheight", "addseparator", "expand", "pad", "dowrap"]})[2].text.strip()
-    dpi = data.find_all("div", {"class": ["table-cell", "rowheight", "addseparator", "expand", "pad", "dowrap"]})[3].text.strip()
+    architecture = data.find_all(
+        "div",
+        {
+            "class": [
+                "table-cell",
+                "rowheight",
+                "addseparator",
+                "expand",
+                "pad",
+                "dowrap",
+            ]
+        },
+    )[1].text.strip()
+    android_version = data.find_all(
+        "div",
+        {
+            "class": [
+                "table-cell",
+                "rowheight",
+                "addseparator",
+                "expand",
+                "pad",
+                "dowrap",
+            ]
+        },
+    )[2].text.strip()
+    dpi = data.find_all(
+        "div",
+        {
+            "class": [
+                "table-cell",
+                "rowheight",
+                "addseparator",
+                "expand",
+                "pad",
+                "dowrap",
+            ]
+        },
+    )[3].text.strip()
     download_link = BASE_URL + data.find_all("a", {"class": "accent_color"})[0]["href"]
 
     return architecture, android_version, dpi, download_link
+
 
 def get_download_link():
     print("[get_download_link] Sleeping...")
@@ -75,6 +115,7 @@ def get_download_link():
     soup = BeautifulSoup(resp.text, "html.parser")
     return soup.find_all("a", {"class": "downloadButton"})[0]["href"]
 
+
 def get_direct_download_link():
     print("[get_direct_download_link] Sleeping...")
 
@@ -86,15 +127,25 @@ def get_direct_download_link():
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
-    data = soup.find('a', {'rel': 'nofollow', 'data-google-vignette': 'false', 'href': lambda href: href and '/wp-content/themes/APKMirror/download.php' in href})["href"]
+    data = soup.find(
+        "a",
+        {
+            "rel": "nofollow",
+            "data-google-vignette": "false",
+            "href": lambda href: href
+            and "/wp-content/themes/APKMirror/download.php" in href,
+        },
+    )["href"]
 
     return data
+
 
 def main():
     # print(search("discord")[0]["link"])
     # print(get_app_details())
     # print(get_download_link())
     print(get_direct_download_link())
+
 
 if __name__ == "__main__":
     main()
