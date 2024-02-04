@@ -114,7 +114,12 @@ class APKMirror:
             self.base_url + data.find_all("a", {"class": "accent_color"})[0]["href"]
         )
 
-        return {"architecture": architecture, "android_version": android_version, "dpi": dpi, "download_link": download_link}
+        return {
+            "architecture": architecture,
+            "android_version": android_version,
+            "dpi": dpi,
+            "download_link": download_link,
+        }
 
     def get_download_link(self, app_download_link):
         print("[get_download_link] Sleeping...")
