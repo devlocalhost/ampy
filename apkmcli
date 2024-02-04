@@ -12,7 +12,11 @@ results = apkm.search(search_query)
 for result in enumerate(results):
     print(f"ID: {result[0]}: Name: {result[1]['name']}, Logo: {result[1]['image']}")
 
-download_id = int(input("Enter ID to get details:\n -> "))
+download_id = int(input("Enter ID to get details, or 99 to exit:\n -> "))
+
+if download_id == 99:
+    sys.exit("Exit")
+
 app_details = apkm.get_app_details(results[download_id]["link"])
 
 print(f"This app is for \"{app_details['architecture']}\" devices, running {app_details['android_version']} with {app_details['dpi']} DPI")
