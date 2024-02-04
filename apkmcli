@@ -10,7 +10,7 @@ search_query = input("Search:\n -> ")
 results = apkm.search(search_query)
 
 for result in enumerate(results):
-    print(f"ID: {result[0]}: Name: {result[1]['name']}, Logo: {result[1]['image']}")
+    print(f"ID: {result[0]}, Name: {result[1]['name']}")
 
 download_id = int(input("Enter ID to get details, or 99 to exit:\n -> "))
 
