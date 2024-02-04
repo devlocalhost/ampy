@@ -113,7 +113,7 @@ def get_download_link():
     print(f"[get_download_link] Status: {resp.status_code}")
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    return soup.find_all("a", {"class": "downloadButton"})[0]["href"]
+    return BASE_URL + str(soup.find_all("a", {"class": "downloadButton"})[0]["href"])
 
 
 def get_direct_download_link():
@@ -137,7 +137,7 @@ def get_direct_download_link():
         },
     )["href"]
 
-    return data
+    return BASE_URL + str(data)
 
 
 def main():
