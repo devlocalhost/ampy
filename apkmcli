@@ -10,9 +10,9 @@ search_query = input("Search:\n -> ")
 results = apkm.search(search_query)
 
 for result in enumerate(results):
-    print(f"ID: {result[0]}, Name: {result[1]['name']}")
+    print(f"[{result[0]}] {result[1]['name']}")
 
-download_id = int(input("Enter ID to get details, or 99 to exit:\n -> "))
+download_id = int(input("Enter number to get details, or 99 to exit:\n -> "))
 
 if download_id == 99:
     sys.exit("Exit")
