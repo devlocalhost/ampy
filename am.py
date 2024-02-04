@@ -1,4 +1,5 @@
 from urllib.parse import quote_plus
+import time
 
 from bs4 import BeautifulSoup
 
@@ -6,7 +7,7 @@ import cloudscraper
 
 BASE_URL = "https://www.apkmirror.com"
 BASE_SEARCH = f"{BASE_URL}/?post_type=app_release&searchtype=apk&s="
-USER_AGENT_STRING = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
+USER_AGENT_STRING = "Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0" # "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36"
 HEADERS = {
     "User-Agent": USER_AGENT_STRING
 }
@@ -14,10 +15,14 @@ HEADERS = {
 scraper = cloudscraper.create_scraper()
 
 def search(query):
+    print("[search] Sleeping...")
+
+    time.sleep(5)
+
     search_url = BASE_SEARCH + quote_plus(query)
     resp = scraper.get(search_url, headers=HEADERS)
 
-    print(resp.status_code)
+    print(f"[search] Status: {resp.status_code}")
 
     soup = BeautifulSoup(resp.text, "html.parser")
     apps = []
@@ -39,9 +44,13 @@ def search(query):
     return apps[:5]
 
 def get_app_details():
+    print("[get_app_details] Sleeping...")
+
+    time.sleep(5)
+
     resp = scraper.get(search("discord")[0]["link"], headers=HEADERS)
 
-    print(resp.status_code)
+    print(f"[get_app_details] Status: {resp.status_code}")
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -55,17 +64,25 @@ def get_app_details():
     return architecture, android_version, dpi, download_link
 
 def get_download_link():
+    print("[get_download_link] Sleeping...")
+
+    time.sleep(5)
+
     resp = scraper.get(get_app_details()[3], headers=HEADERS)
 
-    print(resp.status_code)
+    print(f"[get_download_link] Status: {resp.status_code}")
 
     soup = BeautifulSoup(resp.text, "html.parser")
     return soup.find_all("a", {"class": "downloadButton"})[0]["href"]
 
 def get_direct_download_link():
+    print("[get_direct_download_link] Sleeping...")
+
+    time.sleep(5)
+
     resp = scraper.get(get_download_link(), headers=HEADERS)
 
-    print(resp.status_code)
+    print(f"[get_direct_download_link] Status: {resp.status_code}")
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
