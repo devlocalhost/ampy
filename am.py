@@ -76,8 +76,8 @@ def get_direct_download_link():
 def main():
     # print(search("discord")[0]["link"])
     # print(get_app_details())
-    print(get_download_link())
-    # print(get_direct_download_link())
+    # print(get_download_link())
+    print(get_direct_download_link())
 
 if __name__ == "__main__":
     main()
