@@ -150,7 +150,7 @@ class APKMirror:
             "a",
             {
                 "rel": "nofollow",
-                "data-google-vignette": "false",
+                "data-google-interstitial": "false",
                 "href": lambda href: href
                 and "/wp-content/themes/APKMirror/download.php" in href,
             },
