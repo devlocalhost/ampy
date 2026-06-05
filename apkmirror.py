@@ -35,6 +35,11 @@ class APKMirror:
 
         print(f"[search] Status: {resp.status_code}")
 
+        # Cloudflare blocked — signal caller to fall back
+        if resp.status_code == 403 or "Just a moment" in resp.text:
+            print("[search] Blocked by Cloudflare.")
+            return None
+
         soup = BeautifulSoup(resp.text, "html.parser")
         apps = []
         appRow = soup.find_all("div", {"class": "appRow"})
@@ -69,57 +74,74 @@ class APKMirror:
 
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        data = soup.find_all("div", {"class": ["table-row", "headerFont"]})[1]
+        rows = soup.find_all("div", {"class": ["table-row", "headerFont"]})
+        
+        variants = []
+        for i, row in enumerate(rows):
+            if i == 0:
+                continue # Skip header
+                
+            cells = row.find_all(
+                "div",
+                {
+                    "class": [
+                        "table-cell",
+                        "rowheight",
+                        "addseparator",
+                        "expand",
+                        "pad",
+                        "dowrap",
+                    ]
+                },
+            )
+            if len(cells) < 4:
+                continue
+                
+            arch = cells[1].text.strip()
+            android_version = cells[2].text.strip()
+            dpi = cells[3].text.strip()
+            
+            is_bundle = "APK"
+            badge = cells[0].find("span", {"class": "apkm-badge"})
+            if badge:
+                is_bundle = badge.text.strip()
+                
+            link_elem = row.find_all("a", {"class": "accent_color"})
+            download_link = self.base_url + link_elem[0]["href"] if link_elem else None
+            
+            if download_link:
+                variants.append({
+                    "architecture": arch,
+                    "android_version": android_version,
+                    "dpi": dpi,
+                    "download_link": download_link,
+                    "type": is_bundle
+                })
 
-        architecture = data.find_all(
-            "div",
-            {
-                "class": [
-                    "table-cell",
-                    "rowheight",
-                    "addseparator",
-                    "expand",
-                    "pad",
-                    "dowrap",
-                ]
-            },
-        )[1].text.strip()
-        android_version = data.find_all(
-            "div",
-            {
-                "class": [
-                    "table-cell",
-                    "rowheight",
-                    "addseparator",
-                    "expand",
-                    "pad",
-                    "dowrap",
-                ]
-            },
-        )[2].text.strip()
-        dpi = data.find_all(
-            "div",
-            {
-                "class": [
-                    "table-cell",
-                    "rowheight",
-                    "addseparator",
-                    "expand",
-                    "pad",
-                    "dowrap",
-                ]
-            },
-        )[3].text.strip()
-        download_link = (
-            self.base_url + data.find_all("a", {"class": "accent_color"})[0]["href"]
-        )
-
-        return {
-            "architecture": architecture,
-            "android_version": android_version,
-            "dpi": dpi,
-            "download_link": download_link,
-        }
+        if not variants:
+            return None
+            
+        def score_variant(v):
+            score = 0
+            # Prioritize APK over BUNDLE
+            if v["type"] == "APK": score += 1000
+            elif v["type"] == "BUNDLE": score += 500
+            
+            # Prioritize universal architecture
+            arch = v["architecture"].lower()
+            if arch == "universal": score += 100
+            elif "arm64-v8a" in arch: score += 50
+            elif "armeabi-v7a" in arch: score += 10
+            
+            # Prioritize nodpi for maximum compatibility
+            dpi = v["dpi"].lower()
+            if dpi == "nodpi": score += 20
+            
+            return score
+            
+        best_variant = max(variants, key=score_variant)
+            
+        return best_variant
 
     def get_download_link(self, app_download_link):
         print("[get_download_link] Sleeping...")

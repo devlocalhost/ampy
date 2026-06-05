@@ -1,0 +1,54 @@
+name: APK Downloader
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  download-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run APK Scraper
+        env:
+          # Proxy only for APKMirror (routes through your home laptop via Tailscale)
+          HTTP_PROXY: http://100.90.77.61:8899
+          HTTPS_PROXY: http://100.90.77.61:8899
+          # UptoDown downloads directly (no proxy needed — no Cloudflare)
+          NO_PROXY: uptodown.com,en.uptodown.com,dw.uptodown.com,dw.uptodown.net
+        run: |
+          mkdir -p builds
+          python apkmcli --download-all
+
+      - name: Get Date
+        id: date
+        run: echo "date=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Create Release and Upload APKs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ steps.date.outputs.date }}
+          name: APK Builds - ${{ steps.date.outputs.date }}
+          files: builds/*.apk
+          body: |
+            Automated APK builds:
+            - YouTube, YouTube Music, X → APKMirror via Tailscale proxy
+            - Instagram → UptoDown (direct, no Cloudflare)
